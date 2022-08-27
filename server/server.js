@@ -21,8 +21,17 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 }
 
-app.use(routes);
+const startApolloServer = async (typeDefs, resolvers) => {
+  await server.start();
+  server.applyMiddleward({ app });
 
-db.once('open', () => {
-  app.listen(PORT, () => console.log(`🌍 Now listening on localhost:${PORT}`));
-});
+  db.once('open', () => {
+    app.listen(PORT, () => {
+    console.log(`API server running on port ${PORT}!`);
+    console.log(`Use GraphQL at http://localhost:${PORT}${server.graphqlPath}`)})
+  });
+}
+// app.use(routes);
+
+startApolloServer(typeDefs, resolvers); 
+
