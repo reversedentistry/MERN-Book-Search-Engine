@@ -10,14 +10,24 @@ const typeDefs = gql`
     savedBooks: [String]
     } 
 
+    type Book {
+      bookId: ID,
+      authors: [String], 
+      description: String,
+      title: String,
+      image: String,
+      link: String
+        
+    }
+
     type Auth {
-    token: ID!
-    profile: Profile
+    token: ID!,
+    user: User
   }    
 
   type Query {
-    users: [User]
-    user(_id: String): User
+    users: [User],
+    user(_id: String): User,
     # Because we have the context functionality in place to check a JWT and decode its data, we can use a query that will always find and return the logged in user's data
     me: User
   }
