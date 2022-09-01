@@ -26,6 +26,36 @@ const resolvers = {
             if (!user) {
                 throw new AuthenticationError('No profile with this email found!');
             }
+
+            const correctPw = await user.isCorrectPassword(password); 
+
+            if (!correctPw) {
+                throw new AuthenticationError('Incorrect password!');
+            }
+
+            const token = signToken(user); 
+            return { token, user }; 
+        }, 
+        saveBook: async (parent, { userId, body }, context) => {
+            if (context.user) {
+                return User.findOneAndUpdate(
+                    { _id: userId }, 
+                    { $assToSet: { savedBooks: body } },
+                    { new: true, runValidators: true }
+                )
+            }
+            throw new AuthenticationError('You need to be logged in!');
+        }, 
+        deleteBook: async (parent, { user, params }, context) => {
+            if (context.user) {
+                return User.findOneAndUpdate(
+                    { _id: context.user._id }, 
+                    { $pull: { savedBooks: { bookId: params.bookId }}},
+                    { new: true }
+                );
+            }
+            throw new AuthenticationError('You need to be logged in!');
         }
+
     }
 }
