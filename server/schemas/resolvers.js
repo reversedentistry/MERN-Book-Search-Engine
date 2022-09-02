@@ -14,7 +14,7 @@ const resolvers = {
     },
 
     Mutation: {
-        createUser: async (parent, { username, email, password }) => {
+        addUser: async (parent, { username, email, password }) => {
             const user = await User.create({ username, email, password });
             const token = signToken(user);
 
@@ -36,21 +36,21 @@ const resolvers = {
             const token = signToken(user);
             return { token, user };
         },
-        saveBook: async (parent, { userId, body }, context) => {
+        saveBook: async (parent, { body }, context) => {
             if (context.user) {
                 return User.findOneAndUpdate(
-                    { _id: userId },
-                    { $assToSet: { savedBooks: body } },
+                    { _id: context.user._id },
+                    { $addToSet: { savedBooks: body } },
                     { new: true, runValidators: true }
                 )
             }
             throw new AuthenticationError('You need to be logged in!');
         },
-        deleteBook: async (parent, { user, params }, context) => {
+        removeBook: async (parent, args, context) => {
             if (context.user) {
                 return User.findOneAndUpdate(
                     { _id: context.user._id },
-                    { $pull: { savedBooks: { bookId: params.bookId } } },
+                    { $pull: { savedBooks: { bookId: args.bookId } } },
                     { new: true }
                 );
             }
