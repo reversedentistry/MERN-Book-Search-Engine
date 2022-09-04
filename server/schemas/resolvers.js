@@ -1,4 +1,4 @@
-const { Book, User } = require("../models");
+const { User } = require("../models");
 const { AuthenticationError } = require('apollo-server-express');
 const { signToken } = require('../utils/auth');
 
@@ -20,8 +20,8 @@ const resolvers = {
 
             return { token, user };
         },
-        login: async (parent, { username, password }) => {
-            const user = await User.findOne({ username });
+        login: async (parent, { email, password }) => {
+            const user = await User.findOne({ email });
 
             if (!user) {
                 throw new AuthenticationError('No profile with this email found!');
@@ -38,21 +38,23 @@ const resolvers = {
         },
         saveBook: async (parent, { input }, context) => {
             if (context.user) {
-                return User.findOneAndUpdate(
+                const updatedBooks = await User.findOneAndUpdate(
                     { _id: context.user._id },
                     { $addToSet: { savedBooks: input } },
-                    { new: true, runValidators: true }
-                )
+                    { new: true }
+                ); 
+                return updatedBooks;            
             }
             throw new AuthenticationError('You need to be logged in!');
         },
         removeBook: async (parent, args, context) => {
             if (context.user) {
-                return User.findOneAndUpdate(
+                const updatedBooks = await User.findOneAndUpdate(
                     { _id: context.user._id },
                     { $pull: { savedBooks: { bookId: args.bookId } } },
                     { new: true }
-                );
+                )
+                return updatedBooks;
             }
             throw new AuthenticationError('You need to be logged in!');
         }
